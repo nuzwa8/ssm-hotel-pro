@@ -156,34 +156,6 @@ final class SSM_Inventory_Plugin {
      * (Rule 6: Must have root div and template)
      */
     public function render_admin_page_settings() {
-        // Root div for JS app
-        echo '<div id="ssm-settings-root" class="ssm-root" data-screen="settings"></div>';
-        
-        // Full page template (Rule 6)
-        echo '<template id="ssm-settings-template">';
-        echo '<div>Loading Settings Page...</div>'; // Placeholder
-        echo '</template>';
-    }
-
-    /**
-     * Renders the Unit Types page.
-     * (Rule 6: Must have root div and template)
-     */
-    public function render_admin_page_unit_types() {
-        // Root div for JS app
-        echo '<div id="ssm-unit-types-root" class="ssm-root" data-screen="unit-types"></div>';
-
-        // Full page template (Rule 6)
-        echo '<template id="ssm-unit-types-template">';
-        echo '<div>Loading Unit Types Page...</div>'; // Placeholder
-        echo '</template>';
-    }
-
-/**
-     * Renders the General Settings page.
-     * (Rule 6: Must have root div and template)
-     */
-    public function render_admin_page_settings() {
         // Root div for JS app (Rule 6)
         echo '<div id="ssm-settings-root" class="ssm-root" data-screen="settings">';
         echo '</div>'; // JS app will mount here
@@ -462,6 +434,34 @@ final class SSM_Inventory_Plugin {
                 </div>
             </footer>
             </div> <?php
+        echo '</template>';
+    }
+
+    /**
+     * Renders the Unit Types page.
+     * (Rule 6: Must have root div and template)
+     */
+    public function render_admin_page_unit_types() {
+        // Root div for JS app
+        echo '<div id="ssm-unit-types-root" class="ssm-root" data-screen="unit-types"></div>';
+
+        // Full page template (Rule 6)
+        echo '<template id="ssm-unit-types-template">';
+        echo '<div>Loading Unit Types Page...</div>'; // Placeholder
+        echo '</template>';
+    }
+
+    /**
+     * Renders the Units page.
+     * (Rule 6: Must have root div and template)
+     */
+    public function render_admin_page_units() {
+        // Root div for JS app
+        echo '<div id="ssm-units-root" class="ssm-root" data-screen="units"></div>';
+
+        // Full page template (Rule 6)
+        echo '<template id="ssm-units-template">';
+        echo '<div>Loading Units Page...</div>'; // Placeholder
         echo '</template>';
     }
 
