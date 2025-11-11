@@ -1,1 +1,150 @@
+/**
+ * مشترکہ (CSS) اسٹائلز اور ویری ایبلز۔
+ * تمام اسٹائلز .bssms namespace کے اندر رکھے گئے ہیں۔
+ * قاعدہ 6: Tokens, Responsive, RTL Support۔
+ * قاعدہ 28: Theme Mode (Light and Dark) لازمی۔
+ */
 
+/* 🟢 یہاں سے CSS Tokens شروع ہو رہے ہیں */
+:root {
+    /* 🎨 بنیادی رنگ ٹوکنز - Light Mode Defaults */
+    --bssms-color-primary: #0073aa; /* WordPress Blue */
+    --bssms-color-secondary: #00874c; /* Academy Green */
+    --bssms-color-success: #4caf50;
+    --bssms-color-error: #f44336;
+    --bssms-color-warning: #ff9800;
+
+    /* 🌑 UI رنگ ٹوکنز */
+    --bssms-bg-page: #f0f0f1;
+    --bssms-bg-card: #ffffff;
+    --bssms-color-text: #1e1e1e;
+    --bssms-color-border: #c3c4c7;
+
+    /* 📏 اسپیسنگ ٹوکنز */
+    --bssms-spacing-xs: 4px;
+    --bssms-spacing-sm: 8px;
+    --bssms-spacing-md: 16px;
+    --bssms-spacing-lg: 24px;
+    --bssms-spacing-xl: 40px;
+
+    /* 🔲 شیڈو ٹوکنز */
+    --bssms-shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 🌙 Dark Mode Tokens */
+body.bssms-dark-mode {
+    --bssms-bg-page: #1e1e1e;
+    --bssms-bg-card: #2c2c2c;
+    --bssms-color-text: #e0e0e0;
+    --bssms-color-border: #555555;
+    --bssms-color-primary: #4ab4ff; /* Lightened primary for contrast */
+}
+
+/* 🔴 یہاں پر CSS Tokens ختم ہو رہے ہیں */
+
+/* 🟢 یہاں سے Namespace Styles شروع ہو رہے ہیں */
+
+.wrap {
+    /* WordPress wrap container */
+    padding: var(--bssms-spacing-md);
+    background-color: var(--bssms-bg-page);
+    color: var(--bssms-color-text);
+}
+
+/* تمام روٹ کنٹینرز کو ٹارگٹ کریں */
+[id^="bssms-"] {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Nastaliq Urdu', Arial;
+}
+
+/* --- کارڈ اسٹائلنگ --- */
+.bssms-card {
+    background: var(--bssms-bg-card);
+    border: 1px solid var(--bssms-color-border);
+    padding: var(--bssms-spacing-lg);
+    margin-bottom: var(--bssms-spacing-lg);
+    border-radius: 6px;
+    box-shadow: var(--bssms-shadow-sm);
+    transition: all 0.2s ease;
+}
+
+/* --- فارم اسٹائلنگ --- */
+.bssms-form-group {
+    margin-bottom: var(--bssms-spacing-md);
+}
+
+.bssms-label {
+    display: block;
+    margin-bottom: var(--bssms-spacing-xs);
+    font-weight: 600;
+    color: var(--bssms-color-text);
+    /* قاعدہ 7: Accessibility */
+}
+
+.bssms-input, .bssms-select, .bssms-textarea {
+    width: 100%;
+    padding: var(--bssms-spacing-sm);
+    border: 1px solid var(--bssms-color-border);
+    border-radius: 4px;
+    background-color: var(--bssms-bg-card);
+    color: var(--bssms-color-text);
+    box-sizing: border-box; /* اہم */
+}
+
+/* قاعدہ 7: Focus Ring + Tab Order */
+.bssms-input:focus, .bssms-select:focus, .bssms-textarea:focus {
+    border-color: var(--bssms-color-primary);
+    box-shadow: 0 0 0 2px var(--bssms-color-primary);
+    outline: none;
+}
+
+/* --- بٹن اسٹائلنگ --- */
+.bssms-btn {
+    display: inline-block;
+    padding: var(--bssms-spacing-sm) var(--bssms-spacing-md);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+.bssms-btn-primary {
+    background-color: var(--bssms-color-primary);
+    color: var(--bssms-bg-card); /* White/Light text */
+}
+
+.bssms-btn-primary:hover {
+    background-color: #005a87; /* Slightly darker */
+}
+
+/* --- نوٹیفکیشن میسجز --- */
+.bssms-message-container {
+    position: fixed;
+    top: 30px; /* Admin bar کے نیچے */
+    right: 20px;
+    max-width: 400px;
+    z-index: 9999;
+}
+
+.bssms-message {
+    padding: var(--bssms-spacing-md);
+    margin-bottom: var(--bssms-spacing-sm);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.bssms-message-success { background-color: #e8f5e9; color: #1b5e20; border-left: 5px solid var(--bssms-color-success); }
+.bssms-message-error { background-color: #ffebee; color: #b71c1c; border-left: 5px solid var(--bssms-color-error); }
+.bssms-message-critical { background-color: #ffccbc; color: #e64a19; border-left: 5px solid var(--bssms-color-error); }
+
+/* --- RTL سپورٹ --- */
+/* WordPress Admin میں RTL خود ہی لاگو ہوتا ہے، لیکن ہم flexbox کو الٹا کریں گے جہاں ضروری ہو۔ */
+.bssms-rtl .bssms-form-row {
+    direction: rtl; /* صرف متن پر اثر انداز ہو سکتا ہے، مزید مخصوص فلیکس آئٹم کی ضرورت ہو گی۔ */
+}
+
+/* 🔴 یہاں پر Namespace Styles ختم ہو رہے ہیں */
+
+/* ✅ Syntax verified block end */
