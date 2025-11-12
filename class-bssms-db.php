@@ -375,3 +375,145 @@ public static function get_settings_bulk( $keys ) {
 }
 
 // ✅ Syntax verified block end
+/** Part 16 — Dashboard: DB Logic for KPIs and Charts */
+
+// BSSMS_DB کلاس کے اندر، نئے فنکشنز شامل کریں۔
+
+/**
+ * ڈیش بورڈ کے اہم KPIs اور سمری ڈیٹا حاصل کریں۔
+ *
+ * @return array
+ */
+public static function get_dashboard_kpis() {
+    global $wpdb;
+    $tbl_admissions = $wpdb->prefix . 'bssms_admissions';
+    $tbl_courses = $wpdb->prefix . 'bssms_courses';
+    $current_month_start = date( 'Y-m-01 00:00:00' );
+    $last_month_start = date( 'Y-m-01 00:00:00', strtotime( '-1 month' ) );
+
+    // 1. مرکزی KPIs (Total Students, Fees)
+    $kpis = $wpdb->get_row( "
+        SELECT 
+            COUNT(id) AS total_students_enrolled,
+            SUM(total_fee) AS total_fee_collected,
+            SUM(paid_amount) AS total_paid_amount,
+            SUM(due_amount) AS total_due_amount
+        FROM $tbl_admissions
+    ", ARRAY_A );
+
+    // 2. فعال کورسز کی گنتی
+    $active_courses_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(id) FROM $tbl_courses WHERE is_active = %d", 1 ) );
+    
+    // 3. داخلہ کی شرح کا موازنہ (گزشتہ مہینے سے)
+    $current_month_admissions = $wpdb->get_var( $wpdb->prepare( 
+        "SELECT COUNT(id) FROM $tbl_admissions WHERE admission_date >= %s", 
+        $current_month_start 
+    ) );
+    $last_month_admissions = $wpdb->get_var( $wpdb->prepare( 
+        "SELECT COUNT(id) FROM $tbl_admissions WHERE admission_date >= %s AND admission_date < %s", 
+        $last_month_start, $current_month_start 
+    ) );
+    
+    // 4. فیس کی حیثیت کا بریک ڈاؤن
+    $payment_breakdown = $wpdb->get_results( "
+        SELECT 
+            CASE 
+                WHEN due_amount = 0 THEN 'fully_paid' 
+                WHEN paid_amount > 0 AND due_amount > 0 THEN 'partially_paid'
+                ELSE 'not_paid'
+            END as payment_status,
+            COUNT(id) as count
+        FROM $tbl_admissions
+        GROUP BY payment_status
+    ", ARRAY_A );
+    
+    // 5. تمام ڈیٹا کو اکٹھا کریں
+    return array(
+        'students_count' => absint( $kpis['total_students_enrolled'] ?? 0 ),
+        'fee_collected' => absint( $kpis['total_paid_amount'] ?? 0 ),
+        'fee_dues' => absint( $kpis['total_due_amount'] ?? 0 ),
+        'active_courses' => absint( $active_courses_count ?? 0 ),
+        'admissions_change' => self::calculate_percentage_change( $current_month_admissions, $last_month_admissions ),
+        'payment_breakdown' => $payment_breakdown,
+    );
+}
+
+/**
+ * داخلہ کی گرافنگ کے لیے ڈیٹا حاصل کریں (تاریخ کے مطابق)۔
+ *
+ * @param string $period '30days' یا '6months'۔
+ * @return array
+ */
+public static function get_admissions_over_time( $period = '30days' ) {
+    global $wpdb;
+    $tbl_admissions = $wpdb->prefix . 'bssms_admissions';
+    
+    if ( $period === '6months' ) {
+        $start_date = date( 'Y-m-01', strtotime( '-6 months' ) );
+        $group_format = '%Y-%m'; // گروپنگ: سال اور مہینہ
+        $date_format = '%b %Y'; // ڈسپلے: Jan 2024
+    } else { // 30days
+        $start_date = date( 'Y-m-d', strtotime( '-30 days' ) );
+        $group_format = '%Y-%m-%d'; // گروپنگ: تاریخ
+        $date_format = '%d %b'; // ڈسپلے: 15 Oct
+    }
+
+    // قاعدہ 4: $wpdb->prepare() queries
+    $sql = $wpdb->prepare( "
+        SELECT 
+            DATE_FORMAT(admission_date, %s) AS period_label,
+            COUNT(id) AS count
+        FROM $tbl_admissions
+        WHERE admission_date >= %s
+        GROUP BY period_label
+        ORDER BY admission_date ASC
+    ", $group_format, $start_date );
+
+    return $wpdb->get_results( $sql, ARRAY_A );
+}
+
+/**
+ * حالیہ داخلہ جات کی فہرست حاصل کریں۔
+ *
+ * @param int $limit حد۔
+ * @return array
+ */
+public static function get_recent_admissions( $limit = 5 ) {
+    global $wpdb;
+    $tbl_admissions = $wpdb->prefix . 'bssms_admissions';
+    $tbl_courses = $wpdb->prefix . 'bssms_courses';
+    
+    // قاعدہ 4: $wpdb->prepare() queries
+    $sql = $wpdb->prepare( "
+        SELECT 
+            adm.id, 
+            adm.full_name_en, 
+            adm.full_name_ur, 
+            adm.admission_date, 
+            adm.paid_amount,
+            adm.due_amount,
+            c.course_name_en
+        FROM $tbl_admissions AS adm
+        JOIN $tbl_courses AS c ON adm.course_id = c.id
+        ORDER BY adm.admission_date DESC
+        LIMIT %d
+    ", $limit );
+
+    return $wpdb->get_results( $sql, ARRAY_A );
+}
+
+/**
+ * فیصد تبدیلی کیلکولیٹ کرنے کے لیے ہیلپر فنکشن۔
+ *
+ * @param int $current موجودہ تعداد۔
+ * @param int $previous پچھلی تعداد۔
+ * @return float
+ */
+private static function calculate_percentage_change( $current, $previous ) {
+    if ( $previous == 0 ) {
+        return $current > 0 ? 100.0 : 0.0;
+    }
+    return round( ( ( $current - $previous ) / $previous ) * 100, 1 );
+}
+
+// ✅ Syntax verified block end
